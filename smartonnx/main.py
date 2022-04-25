@@ -39,7 +39,9 @@ def convert(
     # print(json.dumps(onnx_json, sort_keys=True, indent=4))
 
     site_packages = site.getsitepackages()[0]
-    graph_contract_path = Path(os.path.join(site_packages, "contract.cairo.tmpl"))
+    graph_contract_path = Path(
+        os.path.join(site_packages, "smartonnx/templates/contract.cairo.tmpl")
+    )
 
     cookiecutter(
         "https://github.com/franalgaba/felucca-package-template.git",
