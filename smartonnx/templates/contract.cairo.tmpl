@@ -1,0 +1,85 @@
+# Declare this file as a StarkNet contract.
+%lang starknet
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+
+from lr_model_cairo.onnx_cairo import Mul, ReduceSum, Add
+from lr_model_cairo.utils import init_tensor
+
+# TENSOR DEFINITIONS
+
+{% for tensor in tensors -%}
+@storage_var
+func {{ tensor.name.replace("-", "_") }}() -> (res : felt):
+end
+
+{% endfor -%}
+
+# result of latest inference
+@storage_var
+func inference_result() -> (res : felt):
+end
+
+# Run on deployment.
+@constructor
+func constructor{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(
+        {% for tensor in tensors -%}
+        {{ tensor.name.replace("-", "_") }}_data : felt,
+        {% endfor %}  
+    ):
+
+    # TODO: they have to be be structs not only arrays
+{%- for tensor in tensors %}
+    {{ tensor.name.replace("-", "_") }}.write(init_tensor({{ tensor.name.replace("-", "_") }}_data))
+{%- endfor %}  
+    return ()
+end
+
+
+# Starts the inference computation.
+@external
+func predict{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        input : felt):
+
+    # Read Tensors
+{%- for tensor in tensors %}
+    let ({{ tensor.name.replace("-", "_") }}) = {{ tensor.name.replace("-", "_") }}.read()
+{%- endfor %} 
+
+    # Read inputs
+{%- for input in inputs %}
+    let ({{ input.name.replace("-", "_") }}) = input
+{%- endfor %} 
+
+[[[cog
+import cog
+from smartonnx import  utils
+
+for input in utils.get_graph_inputs():
+    cog.out("""
+        let ({0}) = input
+    """.format(input.name))
+]]]
+
+
+    # Build graph
+    let (zx) = input
+    let (c3) = c3.read()
+    let (mulx) = Mul(zx, c3)
+    let (sumx) = ReduceSum(mulx)
+    let (yhatlog) = Add(sumx, c4.read())
+    inference_result.write(yhatlog)
+    return ()
+end
+
+# Returns the latest inference.
+@view
+func get_inference{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+        res : felt):
+    let (res) = inference_result.read()
+    return (res)
+end
