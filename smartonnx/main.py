@@ -9,7 +9,12 @@ from jinja2 import Template
 from cookiecutter.main import cookiecutter
 from google.protobuf.json_format import MessageToJson
 
-from smartonnx.utils import get_graph_inputs, get_graph_tensors
+from smartonnx.utils import (
+    build_graph_template,
+    build_tensor_template,
+    get_graph_inputs,
+    get_graph_tensors,
+)
 
 
 app = typer.Typer(help="smartonnx - Convert ONNX Models to Cairo Contracts")
@@ -50,17 +55,17 @@ def convert(
         overwrite_if_exists=True,
     )
 
-    cairo_package = (
-        Path(cairo_package) / cairo_package.name.replace("-", "_") / "contract.cairo"
-    )
+    cairo_package = Path(cairo_package) / cairo_package.name.replace("-", "_")
+    build_graph_template(graph_contract_path, cairo_package / "contract.cairo")
 
-    with open(graph_contract_path.resolve()) as f:
-        template = Template(f.read())
-
-    with open(cairo_package.resolve(), "w") as f:
-        print(get_graph_tensors())
-        print(get_graph_inputs())
-        f.write(template.render(tensors=get_graph_tensors(), inputs=get_graph_inputs()))
+    for tensor in get_graph_tensors():
+        tensor_contract_path = Path(
+            os.path.join(site_packages, "smartonnx/templates/tensor_loader.cairo.tmpl")
+        )
+        build_tensor_template(
+            tensor_contract_path,
+            cairo_package / f"{tensor.name}_tensor_loader.cairo",
+        )
 
     os.remove(model_def_path.resolve())
 

@@ -8,4 +8,4 @@ class Tensor:
         self.dims = dims
         self.float_data = float_data
         self.output = output
-        self.name = name
+        self.name = name.replace("-", "_")

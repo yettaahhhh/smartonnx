@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 from pathlib import Path
+from jinja2 import Template
 
 import typer
 from smartonnx.entities.inputs import Input
@@ -95,3 +96,22 @@ def get_graph_operators():
             operator_nodes.append(
                 Operator(node["input"], node["output"], node["opType"])
             )
+
+
+def build_graph_template(graph_contract_path, cairo_package):
+
+    with open(graph_contract_path.resolve()) as f:
+        template = Template(f.read())
+
+    with open(cairo_package.resolve(), "w") as f:
+        typer.echo("Building ONNX graph contract")
+        f.write(template.render(tensors=get_graph_tensors(), inputs=get_graph_inputs()))
+
+
+def build_tensor_template(tensor_loader_path, cairo_package):
+    with open(tensor_loader_path.resolve()) as f:
+        template = Template(f.read())
+
+    with open(cairo_package.resolve(), "w") as f:
+        typer.echo("Building ONNX tensors contracts")
+        f.write(template.render(tensors=get_graph_tensors(), inputs=get_graph_inputs()))
