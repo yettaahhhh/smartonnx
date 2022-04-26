@@ -59,14 +59,15 @@ def convert(
     cairo_package = Path(cairo_package) / cairo_package.name.replace("-", "_")
     build_graph_template(graph_contract_path, cairo_package / "contract.cairo")
 
-    for tensor in get_graph_tensors():
-        tensor_contract_path = Path(
-            os.path.join(site_packages, "smartonnx/templates/tensor_loader.cairo.tmpl")
-        )
-        build_tensor_template(
-            tensor_contract_path,
-            cairo_package / f"{tensor.name}_tensor_loader.cairo",
-        )
+    typer.echo("Building ONNX tensors contracts")
+    # for tensor in get_graph_tensors():
+    #     tensor_contract_path = Path(
+    #         os.path.join(site_packages, "smartonnx/templates/tensor_loader.cairo.tmpl")
+    #     )
+    #     build_tensor_template(
+    #         tensor_contract_path,
+    #         cairo_package / f"{tensor.name}_tensor_loader.cairo",
+    #     )
 
     os.remove(model_def_path.resolve())
 
