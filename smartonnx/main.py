@@ -57,7 +57,8 @@ def convert(
     )
 
     cairo_package = Path(cairo_package) / cairo_package.name.replace("-", "_")
-    build_graph_template(graph_contract_path, cairo_package / "contract.cairo")
+    typer.echo("Building ONNX graph contract")
+    # build_graph_template(graph_contract_path, cairo_package / "contract.cairo")
 
     typer.echo("Building ONNX tensors contracts")
     # for tensor in get_graph_tensors():
