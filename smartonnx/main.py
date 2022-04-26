@@ -53,6 +53,7 @@ def convert(
         extra_context={"project_name": cairo_package.name},
         no_input=True,
         overwrite_if_exists=True,
+        checkout="feature/onnx",
     )
 
     cairo_package = Path(cairo_package) / cairo_package.name.replace("-", "_")
